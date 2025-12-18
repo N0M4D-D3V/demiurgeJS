@@ -1,0 +1,32 @@
+main {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+main.spa-leave {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+main.spa-leave.spa-leave-active {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+main.spa-enter {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+main.spa-enter.spa-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respeto accesibilidad: menos motion si el user lo pide */
+@media (prefers-reduced-motion: reduce) {
+  main {
+    transition: none !important;
+  }
+}

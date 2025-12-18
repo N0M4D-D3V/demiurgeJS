@@ -1,0 +1,48 @@
+/* Estado base: oculto */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 999;
+}
+
+/* Visible */
+.modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fondo oscuro */
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Caja del modal */
+.modal__dialog {
+  position: relative;
+  max-width: 700px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 3.5rem;
+}
+
+/* Botón de cierre */
+.modal__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text);
+}
