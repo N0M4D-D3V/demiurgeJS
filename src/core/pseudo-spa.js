@@ -120,6 +120,13 @@
           return;
         }
 
+        let didStartSwap = false;
+        const startSwap = () => {
+          if (didStartSwap) return;
+          didStartSwap = true;
+          doFetchAndSwap();
+        };
+
         contentEl.classList.add(t.leaveClass);
         contentEl.offsetHeight;
         contentEl.classList.add(t.leaveActiveClass);
@@ -127,18 +134,14 @@
         const onEnd = (e) => {
           if (e.target !== contentEl) return;
           contentEl.removeEventListener("transitionend", onEnd);
-          contentEl.classList.remove(t.leaveClass, t.leaveActiveClass);
-          doFetchAndSwap();
+          startSwap();
         };
 
         contentEl.addEventListener("transitionend", onEnd);
 
         setTimeout(() => {
           contentEl.removeEventListener("transitionend", onEnd);
-          contentEl.classList.remove(t.leaveClass, t.leaveActiveClass);
-          if (this.isNavigating) {
-            doFetchAndSwap();
-          }
+          if (this.isNavigating) startSwap();
         }, t.duration + 80);
       } else {
         doFetchAndSwap();
