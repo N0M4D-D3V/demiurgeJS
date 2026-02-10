@@ -1,50 +1,50 @@
 Pseudo-SPA Architecture
 =======================
 
-Arquitectura ligera para sitios estáticos con enrutado pseudo-SPA, carga de parciales y scripts por página, más un servicio de modales accesible.
+A lightweight architecture for static sites that behave like a SPA: internal routing, layout partials, per-page scripts, and an accessible modal service.
 
-Arquitectura
+Architecture
 ------------
-- `src/bootstrap.js`: punto de entrada; al cargarse inyecta parciales de layout configurados en `window.PageConfig` (por ejemplo header/footer), marca el nav activo y ejecuta la lógica de la página actual.
-- `Layout` (`src/core/layout.js`): helpers para traer HTML de parciales (`fetch` + `innerHTML`) y resaltar el enlace de navegación según la URL normalizada.
-- `PseudoSPA` (`src/core/pseudo-spa.js`): intercepta links internos y navegación del historial; descarga el documento destino, reemplaza solo el `<main>` con transiciones opcionales, actualiza `history.pushState` y dispara `onAfterNavigate` para rehidratar.
-- `PageScriptLoader` (`src/core/script-loader.js`): lee `window.PageConfig` para cargar scripts compartidos y específicos de cada `data-page` (solo una vez); permite declarar `init` como referencia a función global para correr lógica por vista tras cada navegación.
-- `Modal` (`src/core/modal-service.js`): servicio ligero con delegación de eventos para abrir/cerrar modales via `data-modal-open`/`data-modal-close` o de forma programática con `Modal.getOrCreate(el)`.
+- `src/bootstrap.js`: entry point; injects layout partials from `window.PageConfig` (header/footer), marks the active nav link, and runs the current page logic.
+- `Layout` (`src/core/layout.js`): helpers to fetch partial HTML (`fetch` + `innerHTML`) and highlight the nav link based on the normalized URL.
+- `PseudoSPA` (`src/core/pseudo-spa.js`): intercepts internal links and history navigation; downloads the destination document, replaces only `<main>` with optional transitions, updates `history.pushState`, and fires `onAfterNavigate` for rehydration.
+- `PageScriptLoader` (`src/core/script-loader.js`): reads `window.PageConfig` to load shared scripts and `data-page` scripts (once); lets you declare `init` as a global reference to run per-view logic after navigation.
+- `Modal` (`src/core/modal-service.js`): lightweight service with event delegation for opening/closing modals via `data-modal-open`/`data-modal-close` or programmatically via `Modal.getOrCreate(el)`.
 
-Build y artefactos
-------------------
-- Bundles JS: `node tools/build-arch-bundle.js` genera `dist/bundle.js` con Layout, PseudoSPA, PageScriptLoader y Modal.
-- CSS core: `node tools/build-arch-styles.js` genera `dist/arch-core.css` concatenando `src/styles/*.css` (incluye `modal.css`).
+Build and artifacts
+-------------------
+- JS bundle: `node tools/build-arch-bundle.js` generates `dist/bundle.js` with Layout, PseudoSPA, PageScriptLoader, and Modal.
+- Core CSS: `node tools/build-arch-styles.js` generates `dist/arch-core.css` by concatenating `src/styles/*.css` (includes `modal.css`).
 
-Uso básico en un proyecto
--------------------------
-Incluye los artefactos en tu HTML:
+Basic usage in a project
+------------------------
+Include the artifacts in your HTML:
 ```html
 <link rel="stylesheet" href="/dist/arch-core.css" />
 <script src="/dist/bundle.js"></script>
 ```
 
-Ejemplo de PageConfig con init/teardown
----------------------------------------
-`PageScriptLoader` carga `sharedScripts` en todas las vistas y los `scripts` de cada `data-page`. Al salir de una página se eliminan los scripts exclusivos y se ejecuta su teardown. Ejemplo:
+PageConfig example with init/teardown
+-------------------------------------
+`PageScriptLoader` loads `sharedScripts` on every view and the `scripts` for each `data-page`. When leaving a page, it removes exclusive scripts and runs teardown. Example:
 ```js
 window.PageConfig = {
   layout: {
     header: { selector: "#app-header", url: "/partials/header.html" },
     footer: { selector: "#app-footer", url: "/partials/footer.html" },
   },
-  sharedScripts: ["/scripts/shared/common.js"], // siempre presentes
+  sharedScripts: ["/scripts/shared/common.js"], // always present
   pages: {
     home: {
       scripts: ["/scripts/pages/home.js"],
-      init: "HomePage.init",           // puede devolver una función cleanup
-      teardown: "HomePage.teardown",   // opcional, llamada al abandonar la vista
+      init: "HomePage.init",           // can return a cleanup function
+      teardown: "HomePage.teardown",   // optional, called when leaving the view
     },
     about: { scripts: [], init: null },
   },
 };
 ```
-En tu módulo de página puedes devolver un cleanup desde `init` o bien exponer un `teardown`:
+In your page module you can return a cleanup from `init` or expose a `teardown`:
 ```js
 window.HomePage = {
   init() {
@@ -56,40 +56,40 @@ window.HomePage = {
     };
   },
   teardown() {
-    // alternativa si no devuelves cleanup desde init
+    // alternative if init did not return cleanup
     destroyWidgets();
   },
 };
 ```
 
-Servicio de modales
--------------------
-Funciona por data-attributes o de forma programática y está expuesto como `window.Modal`.
+Modal service
+-------------
+Works via data-attributes or programmatically and is exposed as `window.Modal`.
 
-Declarativo (recomendado)
+Declarative (recommended)
 ```html
 <!-- Trigger -->
-<button data-modal-open="#mi-modal">Abrir modal</button>
+<button data-modal-open="#mi-modal">Open modal</button>
 
 <!-- Modal -->
 <section id="mi-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal__backdrop" data-modal-close></div>
   <div class="modal__dialog" role="document">
-    <button class="modal__close" aria-label="Cerrar" data-modal-close>×</button>
-    <h2>Título del modal</h2>
-    <p>Contenido del modal…</p>
-    <button data-modal-close>Cerrar</button>
+    <button class="modal__close" aria-label="Close" data-modal-close>×</button>
+    <h2>Modal title</h2>
+    <p>Modal content…</p>
+    <button data-modal-close>Close</button>
   </div>
 </section>
 ```
 
-Programático
+Programmatic
 ```js
 const modal = Modal.getOrCreate(document.querySelector("#mi-modal"));
-modal.open();   // o modal.close(), modal.toggle()
+modal.open();   // or modal.close(), modal.toggle()
 ```
 
-Notas
+Notes
 -----
-- Los listeners están delegados en `document`, así que los modales cargados vía PseudoSPA funcionan sin rehidratación.
-- El estilo base de modales viene en `src/styles/modal.css` y viaja en `dist/arch-core.css`.
+- Listeners are delegated on `document`, so modals loaded via PseudoSPA work without rehydration.
+- Base modal styles live in `src/styles/modal.css` and are included in `dist/arch-core.css`.
