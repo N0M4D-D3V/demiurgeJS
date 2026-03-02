@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS npm/Vite Example | Schedule Detail</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header id="app-header"></header>
+
+      <main data-page="schedule-detail">
+        <section class="hero-card compact">
+          <p class="eyebrow">Schedule Detail</p>
+          <h1>Morning Ops</h1>
+          <p class="lede">
+            Detail page demonstrates per-page timers and teardown behavior.
+          </p>
+          <div class="row">
+            <a class="btn" href="/schedules.html">Back to schedules</a>
+            <a class="btn btn-alt" href="/settings.html">Go to settings</a>
+          </div>
+          <p class="status-line">
+            Detail heartbeat:
+            <strong id="schedule-detail-heartbeat">
+              waiting for ScheduleDetailPage.init()
+            </strong>
+          </p>
+        </section>
+
+        <section class="grid-two">
+          <article class="panel">
+            <h2>Runtime Notes</h2>
+            <p>
+              Watch the footer log while navigating. You should see:
+              <code>init cleanup</code> first, then configured
+              <code>teardown</code>.
+            </p>
+          </article>
+          <article class="panel">
+            <h2>Actions</h2>
+            <button id="detail-log-btn" class="btn btn-ghost">
+              Emit detail log
+            </button>
+          </article>
+        </section>
+      </main>
+
+      <footer id="app-footer"></footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

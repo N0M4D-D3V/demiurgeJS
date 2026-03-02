@@ -1,95 +1,208 @@
-Pseudo-SPA Architecture
-=======================
+# DemiurgeJS
 
-A lightweight architecture for static sites that behave like a SPA: internal routing, layout partials, per-page scripts, and an accessible modal service.
+DemiurgeJS is a lightweight frontend architecture for static sites that need SPA-like behavior without a framework.
 
-Architecture
-------------
-- `src/bootstrap.js`: entry point; injects layout partials from `window.PageConfig` (header/footer), marks the active nav link, and runs the current page logic.
-- `Layout` (`src/core/layout.js`): helpers to fetch partial HTML (`fetch` + `innerHTML`) and highlight the nav link based on the normalized URL.
-- `PseudoSPA` (`src/core/pseudo-spa.js`): intercepts internal links and history navigation; downloads the destination document, replaces only `<main>` with optional transitions, updates `history.pushState`, and fires `onAfterNavigate` for rehydration.
-- `PageScriptLoader` (`src/core/script-loader.js`): reads `window.PageConfig` to load shared scripts and `data-page` scripts (once); lets you declare `init` as a global reference to run per-view logic after navigation.
-- `Modal` (`src/core/modal-service.js`): lightweight service with event delegation for opening/closing modals via `data-modal-open`/`data-modal-close` or programmatically via `Modal.getOrCreate(el)`.
+It provides:
 
-Build and artifacts
--------------------
-- JS bundle: `node tools/build-arch-bundle.js` generates `dist/bundle.js` with Layout, PseudoSPA, PageScriptLoader, and Modal.
-- Core CSS: `node tools/build-arch-styles.js` generates `dist/arch-core.css` by concatenating `src/styles/*.css` (includes `modal.css`).
+- internal routing with `<main>` swapping
+- layout partial injection (header/footer)
+- per-page script loading with cleanup/teardown
+- accessible modal service
 
-Basic usage in a project
-------------------------
-Include the artifacts in your HTML:
-```html
-<link rel="stylesheet" href="/dist/arch-core.css" />
-<script src="/dist/bundle.js"></script>
+DemiurgeJS is now distributed as an npm package with modular builds, while preserving browser-global usage for existing projects.
+
+## Installation
+
+### npm
+
+```bash
+npm install @n0m4d-d3v/demiurgejs
 ```
 
-PageConfig example with init/teardown
--------------------------------------
-`PageScriptLoader` loads `sharedScripts` on every view and the `scripts` for each `data-page`. When leaving a page, it removes exclusive scripts and runs teardown. Example:
+### pnpm
+
+```bash
+pnpm add @n0m4d-d3v/demiurgejs
+```
+
+### CDN
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.global.min.js"></script>
+```
+
+## Quick Start (ESM)
+
 ```js
+import { bootstrapDemiurge } from "@n0m4d-d3v/demiurgejs";
+import "@n0m4d-d3v/demiurgejs/style.css";
+
 window.PageConfig = {
   layout: {
     header: { selector: "#app-header", url: "/partials/header.html" },
     footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    navSelector: "#menu a[href]",
   },
-  sharedScripts: ["/scripts/shared/common.js"], // always present
+  sharedScripts: ["/scripts/shared/common.js"],
   pages: {
-    home: {
-      scripts: ["/scripts/pages/home.js"],
-      init: "HomePage.init",           // can return a cleanup function
-      teardown: "HomePage.teardown",   // optional, called when leaving the view
-    },
-    about: { scripts: [], init: null },
+    home: { scripts: ["/scripts/pages/home.js"], init: "HomePage.init" },
   },
 };
-```
-In your page module you can return a cleanup from `init` or expose a `teardown`:
-```js
-window.HomePage = {
-  init() {
-    const intervalId = setInterval(tick, 1000);
-    document.addEventListener("click", handleClick);
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener("click", handleClick);
-    };
-  },
-  teardown() {
-    // alternative if init did not return cleanup
-    destroyWidgets();
-  },
-};
+
+bootstrapDemiurge();
 ```
 
-Modal service
--------------
-Works via data-attributes or programmatically and is exposed as `window.Modal`.
+## Quick Start (Script Tag / Global)
 
-Declarative (recommended)
+### CDN global build (manual bootstrap)
+
 ```html
-<!-- Trigger -->
-<button data-modal-open="#mi-modal">Open modal</button>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.global.min.js"></script>
+<script>
+  window.PageConfig = {
+    layout: {
+      header: { selector: "#app-header", url: "/partials/header.html" },
+      footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    },
+    pages: { home: { scripts: [], init: null } },
+  };
 
-<!-- Modal -->
-<section id="mi-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="modal__backdrop" data-modal-close></div>
-  <div class="modal__dialog" role="document">
-    <button class="modal__close" aria-label="Close" data-modal-close>×</button>
-    <h2>Modal title</h2>
-    <p>Modal content…</p>
-    <button data-modal-close>Close</button>
-  </div>
-</section>
+  Demiurge.bootstrapDemiurge();
+</script>
 ```
 
-Programmatic
+### Auto-bootstrap global build (legacy-friendly)
+
+This preserves the old “include script and it boots on `DOMContentLoaded`” flow.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/auto-bootstrap.global.min.js"></script>
+```
+
+## CSS Import Instructions
+
+- npm/pnpm consumers should import the package CSS subpath:
+  - `@n0m4d-d3v/demiurgejs/style.css`
+- CDN/script users should include:
+  - `dist/demiurge.css` or `dist/demiurge.min.css`
+
+## Modular Usage Example
+
+Use only what you need (for example, modal service only):
+
 ```js
-const modal = Modal.getOrCreate(document.querySelector("#mi-modal"));
-modal.open();   // or modal.close(), modal.toggle()
+import { Modal, initModalDelegation } from "@n0m4d-d3v/demiurgejs";
+import "@n0m4d-d3v/demiurgejs/style.css";
+
+initModalDelegation(document);
+
+const modal = Modal.getOrCreate(document.querySelector("#my-modal"));
+modal?.open();
 ```
 
-Notes
------
-- Listeners are delegated on `document`, so modals loaded via PseudoSPA work without rehydration.
-- Base modal styles live in `src/styles/modal.css` and are included in `dist/arch-core.css`.
+## Auto-Bootstrap Example
+
+If you want script-tag behavior with zero custom bootstrap code:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/auto-bootstrap.global.min.js"></script>
+```
+
+This build:
+
+- attaches `window.Demiurge`
+- preserves legacy globals (`Layout`, `PseudoSPA`, `PageScriptLoader`, `Modal`)
+- initializes modal delegation
+- boots DemiurgeJS on `DOMContentLoaded`
+
+## Exports (Package Surface)
+
+`package.json` exports:
+
+- `.` -> ESM/CJS library entry (`bootstrapDemiurge`, `Layout`, `PseudoSPA`, `PageScriptLoader`, `Modal`, etc.)
+- `./style.css` -> package CSS
+- `./browser` -> minified browser global build
+- `./auto-bootstrap` -> minified browser global + auto-bootstrap build
+
+Direct CDN artifact paths are also available under `dist/`.
+
+## Backward Compatibility
+
+DemiurgeJS preserves browser-global compatibility:
+
+- `window.Layout`
+- `window.PseudoSPA`
+- `window.PageScriptLoader`
+- `window.Modal`
+
+New browser builds also expose `window.Demiurge` as the preferred namespace.
+
+## Documentation
+
+Full documentation:
+
+- https://n0m4d-d3v.github.io/demiurgeJS/
+
+Repository examples:
+
+- `examples/npm-basic/`
+- `examples/cdn-basic/`
+- `examples/legacy-script/`
+
+## AI Skills
+
+DemiurgeJS provides an official architecture skill for AI agents:
+
+- skills/demiurgejs-architect/latest.md
+
+Use it to scaffold, extend and audit DemiurgeJS projects safely.
+
+## Development
+
+### Build
+
+```bash
+npm run build
+```
+
+Generates `dist/` outputs:
+
+- `index.js` (ESM)
+- `index.cjs` (CJS)
+- `demiurge.global(.min).js`
+- `auto-bootstrap.global(.min).js`
+- `demiurge(.min).css`
+
+### Dev (watch)
+
+```bash
+npm run dev
+```
+
+### Smoke checks
+
+```bash
+npm run test:smoke
+```
+
+### Publish workflow
+
+```bash
+npm run build
+npm run test:smoke
+npm pack --dry-run
+```
+
+`prepublishOnly` runs these checks automatically before `npm publish`.

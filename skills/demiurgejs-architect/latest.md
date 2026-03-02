@@ -1,0 +1,640 @@
+---
+
+name: demiurgejs-architect
+version: 0.2.0
+purpose: Guide AI agents to scaffold and extend static-first pseudo-SPA projects using DemiurgeJS with correct routing,
+layout partials, page script lifecycles, and modal usage.
+when_to_use: - Creating a new site/project that uses DemiurgeJS - Adding pages/routes to a DemiurgeJS-based site - Wiring window.PageConfig and per-page scripts - Integrating DemiurgeJS via npm/pnpm or CDN/script tag - Refactoring legacy script-tag usage to package-based usage without breaking behavior
+when_not_to_use: - Full SPA apps needing component frameworks, virtual DOM, or client-side state stores - SSR/ISR frameworks (Next.js/Nuxt/SvelteKit) as the primary runtime architecture - Apps requiring heavy reactive data layers or runtime dependency ecosystems - Projects where routing is server-only and no client-side navigation enhancement is desired
+
+---
+
+# DemiurgeJS Architecture Skill
+
+## 1. Skill Metadata
+
+### Name
+
+`demiurgejs-architect`
+
+### Version
+
+`1.0.0`
+
+### Purpose
+
+Teach and enforce correct use of DemiurgeJS architecture in static-first sites with pseudo-SPA navigation, layout
+partials, page lifecycle scripts, and modal service.
+
+### When to use
+
+- Scaffolding a new DemiurgeJS site
+- Adding a new page (`<main data-page="...">`) and wiring page lifecycle scripts
+- Setting up `window.PageConfig`
+- Integrating via:
+  - npm/pnpm (`bootstrapDemiurge`, CSS subpath import)
+  - CDN/browser global (`window.Demiurge`)
+  - legacy auto-bootstrap flow (`auto-bootstrap.global(.min).js`)
+- Auditing code for lifecycle leaks (timers/listeners/widgets not cleaned up)
+
+### When NOT to use
+
+- Framework-heavy component apps
+- SSR-first apps
+- Apps expecting built-in state management/reactivity
+- Routing systems that do not replace `<main>` and do not use `window.PageConfig`
+
+---
+
+## 2. Core Principles
+
+Agents MUST follow these rules.
+
+### Architecture rules
+
+- DemiurgeJS is **static-first**: HTML remains the source of truth.
+- Pseudo-SPA navigation swaps only the configured content area (default `<main>`).
+- Page-specific behavior is attached by `PageScriptLoader` using `data-page` + `window.PageConfig`.
+- Layout partials are declarative in `window.PageConfig.layout`.
+- Modals use delegated document listeners and data attributes.
+
+### Coding rules
+
+- Prefer **explicit** initialization over hidden side effects.
+- Keep runtime code **dependency-free** unless explicitly required by the host project.
+- Keep scripts **small and page-scoped**.
+- Every page script that registers listeners/timers MUST provide cleanup.
+
+### Safety rules
+
+- No top-level DOM work in reusable modules (library code).
+- No global mutation except:
+  - `window.PageConfig` (consumer config)
+  - DemiurgeJS public globals (`window.Demiurge`, legacy aliases) when using browser global entry
+- Avoid duplicate event listeners across pseudo-SPA navigations.
+
+---
+
+## 3. Standard Project Layout
+
+Use this canonical layout for consumer projects (not the DemiurgeJS library repo itself).
+
+```text
+my-site/
+├── index.html
+├── about.html
+├── contact.html
+├── partials/
+│   ├── header.html
+│   └── footer.html
+├── scripts/
+│   ├── app/
+│   │   ├── config.js              # defines window.PageConfig (script/global mode)
+│   │   └── bootstrap.js           # manual bootstrap entry (if not using auto-bootstrap)
+│   ├── shared/
+│   │   └── common.js              # shared page behaviors
+│   └── pages/
+│       ├── home.js                # window.HomePage = { init, teardown }
+│       ├── about.js
+│       └── contact.js
+├── styles/
+│   └── site.css
+└── assets/
+
+### If using npm/pnpm (bundler-based app)
+
+src/
+├── main.js                        # imports bootstrapDemiurge + CSS
+├── page-config.js                 # assigns window.PageConfig
+├── pages/
+│   ├── home.js
+│   └── about.js
+├── shared/
+│   └── common.js
+└── styles/
+    └── app.css
+public/
+├── partials/
+│   ├── header.html
+│   └── footer.html
+├── index.html
+└── about.html
+```
+
+### Layout requirements
+
+- Each HTML page MUST contain a replaceable <main> with data-page.
+- data-page value MUST match a key in window.PageConfig.pages.
+
+Example:
+
+```html
+<main data-page="home">
+  <h1>Home</h1>
+</main>
+```
+
+———
+
+## 4. Page Creation Workflow
+
+Follow these steps exactly.
+
+### Step 1: Create the HTML page
+
+- Add a <main data-page="page-id">.
+- Include containers for layout partials if using header/footer injection.
+- Ensure links are normal internal links (<a href="/about.html"> etc.) so PseudoSPA can intercept.
+
+Example:
+
+```html
+<header id="app-header"></header>
+
+<nav id="menu">
+  <a href="/index.html">Home</a>
+  <a href="/about.html">About</a>
+</nav>
+
+<main data-page="about">
+  <h1>About</h1>
+  <p>Static-first content.</p>
+</main>
+
+<footer id="app-footer"></footer>
+```
+
+### Step 2: Register the page in window.PageConfig
+
+Add/update the pages entry with scripts, init, and optional teardown.
+
+```javascript
+window.PageConfig = {
+  layout: {
+    header: { selector: "#app-header", url: "/partials/header.html" },
+    footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    navSelector: "#menu a[href]",
+  },
+  sharedScripts: ["/scripts/shared/common.js"],
+  pages: {
+    about: {
+      scripts: ["/scripts/pages/about.js"],
+      init: "AboutPage.init",
+      teardown: "AboutPage.teardown",
+    },
+  },
+};
+```
+
+### Step 3: Create the page script module (global-script pattern)
+
+Expose a global object with init and optional teardown.
+
+```javascript
+window.AboutPage = {
+  init() {
+    const onClick = (e) => {
+      // page-specific behavior
+    };
+
+    document.addEventListener("click", onClick);
+
+    return () => {
+      document.removeEventListener("click", onClick);
+    };
+  },
+
+  teardown() {
+    // Optional fallback cleanup for things not handled by init return
+  },
+};
+```
+
+### Step 4: Lifecycle cleanup checklist
+
+If init() creates any of these, cleanup MUST remove/stop them:
+
+- addEventListener
+- setInterval / setTimeout
+- observers (IntersectionObserver, MutationObserver)
+- widget instances
+- subscriptions
+
+———
+
+## 5. Layout Injection Workflow
+
+### Define partials in window.PageConfig.layout
+
+Use selectors that exist on every page that needs the partial.
+
+```javascript
+layout: {
+header: { selector: "#app-header", url: "/partials/header.html" },
+footer: { selector: "#app-footer", url: "/partials/footer.html" },
+navSelector: "#menu a[href]"
+}
+```
+
+### Injection rules
+
+- Only inject into dedicated containers (#app-header, #app-footer).
+- Do not target <main> for layout partials.
+- Partial URLs should be stable and same-origin for fetch-based loading.
+- Keep partial HTML self-contained (no <html>, <body> wrappers).
+
+### Avoid duplication bugs
+
+Agents MUST ensure:
+
+- There is only one matching layout container per selector on a page.
+- Layout partials are not manually duplicated in HTML if config injection is enabled.
+- Repeated calls to bootstrap are avoided unless intentional (would re-run injections and listeners).
+
+### Safe partial content pattern
+
+```html
+<!-- /partials/header.html -->
+<div class="site-header__inner">
+  <a href="/index.html">Home</a>
+  <a href="/about.html">About</a>
+</div>
+```
+
+———
+
+## 6. Routing Rules
+
+### URL mapping
+
+- Use normal anchor links (<a href="/about.html">About</a>).
+- PseudoSPA intercepts internal same-origin links automatically.
+- External links, mailto:, tel:, hash-only links, and modifier-clicks are not intercepted.
+
+### History handling
+
+- DemiurgeJS uses history.pushState on internal navigation.
+- Back/forward works via popstate.
+- Agents SHOULD NOT manually call pushState for normal page navigation if PseudoSPA is active.
+
+### Active nav patterns
+
+Use layout.navSelector to define navigable items for active highlighting.
+
+Recommended:
+
+```js
+navSelector: "#menu a[href]";
+```
+
+Requirements:
+
+- href values should be valid URLs/paths.
+- Avoid JS-only links (href="javascript:...").
+
+### Content swap rule
+
+- The destination page MUST contain the same content selector (default main) or navigation falls back to full page load.
+
+———
+
+## 7. Script Lifecycle Rules
+
+### Lifecycle contract
+
+PageScriptLoader runs on each page transition:
+
+1. Runs previous page cleanup returned by init() (if any)
+2. Runs previous page teardown (if configured)
+3. Removes previous page-exclusive scripts
+4. Loads shared scripts
+5. Loads current page scripts
+6. Runs current page init()
+
+### init rules
+
+- init may return a cleanup function.
+- Prefer cleanup returned from init for listeners/timers created there.
+- init may be async if needed.
+
+### teardown rules
+
+- Use teardown for fallback cleanup or external widget destruction.
+- Do not duplicate the same cleanup in both init return and teardown.
+
+### Memory safety patterns
+
+Good:
+
+```js
+window.ContactPage = {
+  init() {
+    const controller = new AbortController();
+
+    document
+      .querySelector("#contact-form")
+      ?.addEventListener("submit", handleSubmit, { signal: controller.signal });
+
+    const intervalId = setInterval(syncUI, 1000);
+
+    return () => {
+      controller.abort();
+      clearInterval(intervalId);
+    };
+  },
+};
+```
+
+Avoid:
+
+```js
+window.ContactPage = {
+  init() {
+    document.addEventListener("click", handleClick); // no cleanup
+  },
+};
+```
+
+———
+
+## 8. Modal Usage Pattern
+
+### Declarative modal (recommended)
+
+```html
+<button data-modal-open="#my-modal">Open modal</button>
+
+<section
+  id="my-modal"
+  class="modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="modal__backdrop" data-modal-close></div>
+  <div class="modal__dialog" role="document">
+    <button class="modal__close" aria-label="Close" data-modal-close>×</button>
+    <h2>Modal title</h2>
+    <p>Modal content</p>
+  </div>
+</section>
+```
+
+### Programmatic modal
+
+```js
+const modalEl = document.querySelector("#my-modal");
+const modal = Modal.getOrCreate(modalEl);
+modal?.open();
+```
+
+### Modal rules
+
+- Use data-modal-open with a valid CSS selector (usually #id).
+- Include at least one close trigger with data-modal-close.
+- Keep role="dialog" and aria-modal="true" on modal root.
+- Do not manually re-bind modal listeners on every navigation if using delegated modal handling.
+
+———
+
+## 9. Anti-patterns (MUST NOT DO)
+
+Agents MUST NOT generate these patterns.
+
+### Top-level DOM side effects in reusable modules
+
+Bad:
+
+```js
+document.addEventListener("click", () => {});
+```
+
+Reason: duplicates listeners on imports/reloads and breaks package safety.
+
+### Missing data-page
+
+Bad:
+
+```html
+<main>...</main>
+```
+
+Reason: PageScriptLoader cannot resolve page config.
+
+### Page script without cleanup
+
+Bad:
+
+```js
+window.HomePage = {
+  init() {
+    setInterval(tick, 1000);
+  },
+};
+```
+
+Reason: leaks timer after navigation.
+
+### Duplicating layout markup and injected partials
+
+Bad:
+
+- Hardcoding header HTML in page + also injecting layout.header
+  Reason: duplicated UI / inconsistent nav state.
+
+### Mutating DemiurgeJS globals
+
+Bad:
+
+```js
+window.PseudoSPA = {};
+```
+
+Reason: breaks framework behavior and compatibility.
+
+### Re-running bootstrap unintentionally
+
+Bad:
+
+- Calling bootstrapDemiurge() multiple times on same page load without cleanup strategy
+  Reason: duplicate router listeners, duplicate layout injection attempts.
+
+### Storing page state only in DOM globals without teardown
+
+Bad:
+
+- global arrays/observers accumulating per navigation
+  Reason: memory leaks and stale handlers.
+
+———
+
+## 10. Example Scaffolding Templates
+
+## A. npm/pnpm (ESM) starter
+
+### src/main.js
+
+```js
+import { bootstrapDemiurge } from "@n0m4d-d3v/demiurgejs";
+import "@n0m4d-d3v/demiurgejs/style.css";
+
+window.PageConfig = {
+  layout: {
+    header: { selector: "#app-header", url: "/partials/header.html" },
+    footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    navSelector: "#menu a[href]",
+  },
+  sharedScripts: ["/scripts/shared/common.js"],
+  pages: {
+    home: { scripts: ["/scripts/pages/home.js"], init: "HomePage.init" },
+    about: { scripts: ["/scripts/pages/about.js"], init: "AboutPage.init" },
+  },
+};
+
+bootstrapDemiurge();
+```
+
+### public/index.html
+
+```html
+<header id="app-header"></header>
+<nav id="menu">
+  <a href="/index.html">Home</a>
+  <a href="/about.html">About</a>
+</nav>
+<main data-page="home">
+  <h1>Home</h1>
+</main>
+<footer id="app-footer"></footer>
+<script type="module" src="/src/main.js"></script>
+```
+
+### public/about.html
+
+```html
+<header id="app-header"></header>
+<nav id="menu">
+  <a href="/index.html">Home</a>
+  <a href="/about.html">About</a>
+</nav>
+<main data-page="about">
+  <h1>About</h1>
+</main>
+<footer id="app-footer"></footer>
+<script type="module" src="/src/main.js"></script>
+```
+
+### public/scripts/pages/home.js
+
+```js
+window.HomePage = {
+  init() {
+    const btn = document.querySelector("[data-track-home]");
+    if (!btn) return null;
+
+    const onClick = () => console.log("home click");
+    btn.addEventListener("click", onClick);
+
+    return () => btn.removeEventListener("click", onClick);
+  },
+};
+```
+
+## B. CDN / browser global starter (manual bootstrap)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+/>
+
+<header id="app-header"></header>
+<main data-page="home">
+  <h1>Home</h1>
+</main>
+<footer id="app-footer"></footer>
+
+<script>
+  window.PageConfig = {
+    layout: {
+      header: { selector: "#app-header", url: "/partials/header.html" },
+      footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    },
+    sharedScripts: [],
+    pages: {
+      home: { scripts: [], init: null },
+    },
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.global.min.js"></script>
+<script>
+  Demiurge.bootstrapDemiurge();
+</script>
+```
+
+## C. Legacy script starter (auto-bootstrap)
+
+```html
+<link rel="stylesheet" href="/dist/demiurge.css" />
+
+<header id="app-header"></header>
+<main data-page="home">
+  <h1>Home</h1>
+</main>
+<footer id="app-footer"></footer>
+
+<script src="/scripts/page-config.js"></script>
+<script src="/dist/auto-bootstrap.global.js"></script>
+```
+
+Notes:
+
+- Preserves legacy globals (Layout, PseudoSPA, PageScriptLoader, Modal)
+- Auto-boots on DOMContentLoaded
+
+———
+
+## 11. Upgrade & Compatibility Notes
+
+### Public APIs agents should prefer
+
+- Package imports:
+  - bootstrapDemiurge
+  - Layout
+  - PseudoSPA
+  - PageScriptLoader
+  - Modal
+  - initModalDelegation
+- Browser global namespace:
+  - window.Demiurge (preferred for new code)
+
+### Legacy compatibility to preserve
+
+- window.Layout
+- window.PseudoSPA
+- window.PageScriptLoader
+- window.Modal
+- window.PageConfig contract
+- <main data-page="..."> routing/script loading pattern
+
+### Forward-compatible generation rules
+
+- Do not rely on internal source file paths of DemiurgeJS in consumer apps.
+- Use package exports (@n0m4d-d3v/demiurgejs, .../style.css) when using npm/pnpm.
+- Use documented dist/ artifacts when using CDN/script tag.
+- Keep page scripts independent and cleanup-safe to remain compatible with lifecycle behavior.
+- Avoid monkey-patching DemiurgeJS objects; wrap behavior externally instead.
+
+### Version upgrade checklist for agents
+
+When updating a DemiurgeJS project:
+
+1. Confirm package export names are unchanged.
+2. Confirm CSS entry path (./style.css) is unchanged.
+3. Re-test:
+   - internal navigation
+   - active nav highlighting
+   - page script cleanup
+   - modals after navigation
+4. Check docs/examples for renamed browser artifacts or deprecated globals.

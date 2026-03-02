@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS CDN Example</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+    />
+  </head>
+  <body>
+    <header id="app-header"></header>
+
+    <main data-page="home">
+      <h1>DemiurgeJS (CDN)</h1>
+      <p>Using the browser global build with manual bootstrap.</p>
+
+      <button data-modal-open="#cdn-modal">Open modal</button>
+      <section
+        id="cdn-modal"
+        class="modal"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="modal__backdrop" data-modal-close></div>
+        <div class="modal__dialog" role="document">
+          <button class="modal__close" aria-label="Close" data-modal-close>
+            ×
+          </button>
+          <p>Modal via `window.Demiurge` global build.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer id="app-footer"></footer>
+
+    <script>
+      window.PageConfig = {
+        layout: {
+          header: { selector: "#app-header", url: "./partials/header.html" },
+          footer: { selector: "#app-footer", url: "./partials/footer.html" }
+        },
+        sharedScripts: [],
+        pages: {
+          home: { scripts: [], init: null }
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.global.min.js"></script>
+    <script>
+      Demiurge.bootstrapDemiurge();
+    </script>
+  </body>
+  </html>

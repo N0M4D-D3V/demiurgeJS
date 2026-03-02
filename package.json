@@ -1,0 +1,62 @@
+{
+  "name": "@n0m4d-d3v/demiurgejs",
+  "version": "0.2.1",
+  "author": "SK3L3TØR",
+  "description": "Lightweight pseudo-SPA architecture for static sites.",
+  "license": "MIT",
+  "homepage": "https://n0m4d-d3v.github.io/demiurgeJS/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n0m4d-d3v/demiurgeJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/n0m4d-d3v/demiurgeJS/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/demiurge.css",
+    "./browser": "./dist/demiurge.global.min.js",
+    "./auto-bootstrap": "./dist/auto-bootstrap.global.min.js",
+    "./package.json": "./package.json"
+  },
+  "unpkg": "./dist/demiurge.global.min.js",
+  "jsdelivr": "./dist/demiurge.global.min.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/*.css",
+    "./dist/demiurge.global.js",
+    "./dist/demiurge.global.min.js",
+    "./dist/auto-bootstrap.global.js",
+    "./dist/auto-bootstrap.global.min.js"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "clean": "node tools/clean.mjs",
+    "build": "node tools/build.mjs",
+    "build:js": "node tools/build-js.mjs",
+    "build:css": "node tools/build-css.mjs",
+    "dev": "node tools/build.mjs --watch",
+    "check:pack": "npm pack --dry-run",
+    "test:smoke": "node tools/verify-pack.mjs",
+    "prepublishOnly": "npm run build && npm run test:smoke && npm run check:pack"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "lightningcss": "^1.31.1"
+  }
+}

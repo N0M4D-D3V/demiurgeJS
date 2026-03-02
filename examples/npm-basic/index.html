@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS npm/Vite Example | Dashboard</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header id="app-header"></header>
+
+      <main data-page="home">
+        <section class="hero-card">
+          <p class="eyebrow">npm basic / vite / pseudo-spa</p>
+          <h1>Architecture Demo Workspace</h1>
+          <p class="lede">
+            This page bootstraps DemiurgeJS from the npm package and demonstrates
+            layout partials, pseudo-SPA navigation, shared scripts, and page
+            lifecycle hooks.
+          </p>
+          <div class="row">
+            <a class="btn" href="/schedules.html">Open Schedules</a>
+            <a class="btn btn-alt" href="/settings.html">Open Settings</a>
+            <button class="btn btn-ghost" data-modal-open="#demo-modal">
+              Open Modal
+            </button>
+          </div>
+          <p class="status-line">
+            Home heartbeat:
+            <strong id="home-heartbeat">waiting for HomePage.init()</strong>
+          </p>
+        </section>
+
+        <section class="grid-two">
+          <article class="panel">
+            <h2>What to inspect</h2>
+            <ul>
+              <li><code>src/main.js</code> defines <code>window.PageConfig</code>.</li>
+              <li><code>public/partials/*</code> are injected into the shell.</li>
+              <li><code>public/scripts/shared/*</code> loads once and persists.</li>
+              <li><code>public/scripts/pages/*</code> loads per page and cleans up.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2>Quick actions</h2>
+            <p>Click the button to add a visible runtime log entry from the page script.</p>
+            <button id="home-log-btn" class="btn btn-alt">Emit Home Event</button>
+          </article>
+        </section>
+
+        <section
+          id="demo-modal"
+          class="modal"
+          aria-hidden="true"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="demo-modal-title"
+        >
+          <div class="modal__backdrop" data-modal-close></div>
+          <div class="modal__dialog" role="document">
+            <button class="modal__close" aria-label="Close" data-modal-close>
+              ×
+            </button>
+            <h2 id="demo-modal-title">Modal Delegation Is Active</h2>
+            <p>
+              This uses <code>data-modal-open</code>/<code>data-modal-close</code>
+              and works because <code>bootstrapDemiurge()</code> initializes
+              modal delegation.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer id="app-footer"></footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

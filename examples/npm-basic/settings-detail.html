@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS npm/Vite Example | Settings Detail</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header id="app-header"></header>
+
+      <main data-page="settings-detail">
+        <section class="hero-card compact">
+          <p class="eyebrow">Settings Detail</p>
+          <h1>Profile &amp; Security</h1>
+          <p class="lede">
+            Form submit is intercepted by the page script to show dynamic state.
+          </p>
+          <div class="row">
+            <a class="btn" href="/settings.html">Back to settings</a>
+            <a class="btn btn-alt" href="/schedules.html">Go to schedules</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <form id="settings-detail-form" class="form-stack">
+            <label>
+              Display name
+              <input name="displayName" type="text" value="Demiurge Operator" />
+            </label>
+            <label>
+              Email notifications
+              <select name="notifications">
+                <option value="all">All</option>
+                <option value="critical">Critical only</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            <label class="check">
+              <input name="mfa" type="checkbox" checked />
+              Require MFA for all admins
+            </label>
+            <div class="row">
+              <button type="submit" class="btn">Save (demo)</button>
+              <span id="settings-detail-status" class="status-line">
+                waiting for SettingsDetailPage.init()
+              </span>
+            </div>
+          </form>
+        </section>
+      </main>
+
+      <footer id="app-footer"></footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -3,119 +3,188 @@ layout: default
 title: Demiurge.JS
 ---
 
+# DemiurgeJS
+
+DemiurgeJS is a lightweight pseudo-SPA architecture for static sites that need routing-like behavior, layout partials, per-page scripts, and utility services without a framework runtime.
+
+It supports both:
+- **Library usage** (npm/pnpm imports: ESM + CJS)
+- **Script usage** (browser IIFE globals, including auto-bootstrap)
+
+## Architecture Overview
+
+Core runtime modules:
+- `Layout` (`src/core/layout.js`): partial injection + active nav link highlighting
+- `PseudoSPA` (`src/core/pseudo-spa.js`): internal navigation interception and `<main>` replacement
+- `PageScriptLoader` (`src/core/script-loader.js`): page script loading, cleanup, and teardown
+- `Modal` (`src/core/modal.js`): accessible modal service + delegated trigger support
+
+Bootstrap and entries:
+- `src/bootstrap/bootstrap.js`: explicit `bootstrapDemiurge()` function
+- `src/entries/index.js`: package export entry (ESM/CJS)
+- `src/entries/browser-global.js`: browser global entry (`window.Demiurge` + legacy globals)
+- `src/entries/browser-auto-bootstrap.js`: browser global + DOMContentLoaded auto-bootstrap
+
+## Package Architecture
+
+### Source structure (`src/`)
+
+- `src/core/` -> reusable runtime modules (side-effect free by default)
+- `src/bootstrap/` -> bootstrap helpers and banner
+- `src/entries/` -> distribution-specific entry points
+- `src/styles/` -> framework CSS and CSS aggregation entry (`index.css`)
+
+### Build tooling (`tools/`)
+
+- `tools/build-js.mjs` -> builds ESM, CJS, and browser IIFE outputs with `esbuild`
+- `tools/build-css.mjs` -> builds CSS outputs with `lightningcss`
+- `tools/build.mjs` -> orchestrates build/watch flow
+- `tools/verify-pack.mjs` -> smoke checks generated package artifacts
+
+## Distribution Targets
+
+`npm run build` generates `dist/` artifacts for multiple consumption modes:
+
+- `dist/index.js` -> ESM library build
+- `dist/index.cjs` -> CJS library build
+- `dist/index.d.ts` -> Type declarations
+- `dist/demiurge.global.js` / `dist/demiurge.global.min.js` -> browser global build
+- `dist/auto-bootstrap.global.js` / `dist/auto-bootstrap.global.min.js` -> browser global + auto-bootstrap build
+- `dist/demiurge.css` / `dist/demiurge.min.css` -> framework CSS
+
+## Using as Library vs Script
+
+### Library usage (npm/pnpm)
+
+Use this when your project has a bundler/build system.
+
 ```js
-███████████████████████████████████████████████████████████████████
-powered by
-  ██████  ███████ ███    ███ ██ ██    ██ ██████   ██████  ███████
-  ██   ██ ██      ████  ████ ██ ██    ██ ██   ██ ██       ██
-  ██   ██ █████   ██ ████ ██ ██ ██    ██ ██████  ██   ███ █████
-  ██   ██ ██      ██  ██  ██ ██ ██    ██ ██   ██ ██    ██ ██
-  ██████  ███████ ██      ██ ██  ██████  ██   ██  ██████  ███████
-  PSEUDO-SPA ARCHITECTURE                                  v0.0.3
-███████████████████████████████████████████████████████████████████
+import { bootstrapDemiurge, Modal } from "@n0m4d-d3v/demiurgejs";
+import "@n0m4d-d3v/demiurgejs/style.css";
+
+bootstrapDemiurge();
 ```
 
-A lightweight architecture for static sites that behave like a SPA: internal routing, layout partials, per-page scripts, and an accessible modal service.
+You can also import individual APIs:
 
-## Architecture
+```js
+import { Modal, initModalDelegation } from "@n0m4d-d3v/demiurgejs";
 
-- `src/bootstrap.js`: entry point; injects layout partials from `window.PageConfig` (header/footer), marks the active nav link, and runs the current page logic.
-- `Layout` (`src/core/layout.js`): helpers to fetch partial HTML (`fetch` + `innerHTML`) and highlight the nav link based on the normalized URL.
-- `PseudoSPA` (`src/core/pseudo-spa.js`): intercepts internal links and history navigation; downloads the destination document, replaces only `<main>` with optional transitions, updates `history.pushState`, and fires `onAfterNavigate` for rehydration.
-- `PageScriptLoader` (`src/core/script-loader.js`): reads `window.PageConfig` to load shared scripts and `data-page` scripts (once); lets you declare `init` as a global reference to run per-view logic after navigation.
-- `Modal` (`src/core/modal-service.js`): lightweight service with event delegation for opening/closing modals via `data-modal-open`/`data-modal-close` or programmatically via `Modal.getOrCreate(el)`.
+initModalDelegation(document);
+```
 
-## Build and artifacts
+### Script usage (browser global)
 
-- JS bundle: `node tools/build-arch-bundle.js` generates `dist/bundle.js` with Layout, PseudoSPA, PageScriptLoader, and Modal.
-- Core CSS: `node tools/build-arch-styles.js` generates `dist/arch-core.css` by concatenating `src/styles/*.css` (includes `modal.css`).
+Use this for static sites without a bundler.
 
-## Basic usage in a project
-
-Include the artifacts in your HTML:
+Manual bootstrap:
 
 ```html
-<link rel="stylesheet" href="/dist/arch-core.css" />
-<script src="/dist/bundle.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/demiurge.global.min.js"></script>
+<script>
+  Demiurge.bootstrapDemiurge();
+</script>
 ```
 
-## PageConfig example with init/teardown
+Auto-bootstrap (legacy-friendly):
 
-`PageScriptLoader` loads `sharedScripts` on every view and the `scripts` for each `data-page`. When leaving a page, it removes exclusive scripts and runs teardown. Example:
+```html
+<script src="https://cdn.jsdelivr.net/npm/@n0m4d-d3v/demiurgejs/dist/auto-bootstrap.global.min.js"></script>
+```
+
+## Backward Compatibility (Globals)
+
+The browser global build preserves legacy globals for existing integrations:
+
+- `window.Layout`
+- `window.PseudoSPA`
+- `window.PageScriptLoader`
+- `window.Modal`
+
+Preferred global namespace for new code:
+- `window.Demiurge`
+
+## PageConfig Contract
+
+`PageScriptLoader` expects:
+- a replaceable `<main data-page="page-id">...</main>`
+- a `window.PageConfig` object with page registrations
+
+Minimal example:
 
 ```js
 window.PageConfig = {
   layout: {
     header: { selector: "#app-header", url: "/partials/header.html" },
     footer: { selector: "#app-footer", url: "/partials/footer.html" },
+    navSelector: "#menu a[href]",
   },
-  sharedScripts: ["/scripts/shared/common.js"], // always present
+  sharedScripts: ["/scripts/shared/common.js"],
   pages: {
     home: {
       scripts: ["/scripts/pages/home.js"],
-      init: "HomePage.init", // can return a cleanup function
-      teardown: "HomePage.teardown", // optional, called when leaving the view
+      init: "HomePage.init",
+      teardown: "HomePage.teardown",
     },
-    about: { scripts: [], init: null },
   },
 };
 ```
 
-In your page module you can return a cleanup from `init` or expose a `teardown`:
+Cleanup behavior when navigating away:
+1. Runs cleanup returned by `init()` (if any)
+2. Runs configured `teardown` function (if any)
 
-```js
-window.HomePage = {
-  init() {
-    const intervalId = setInterval(tick, 1000);
-    document.addEventListener("click", handleClick);
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener("click", handleClick);
-    };
-  },
-  teardown() {
-    // alternative if init did not return cleanup
-    destroyWidgets();
-  },
-};
-```
+## Modal Service
 
-## Modal service
-
-Works via data-attributes or programmatically and is exposed as `window.Modal`.
-
-Declarative (recommended)
+Declarative usage (recommended):
 
 ```html
-<!-- Trigger -->
-<button data-modal-open="#mi-modal">Open modal</button>
+<button data-modal-open="#my-modal">Open modal</button>
 
-<!-- Modal -->
-<section
-  id="mi-modal"
-  class="modal"
-  aria-hidden="true"
-  role="dialog"
-  aria-modal="true"
->
+<section id="my-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal__backdrop" data-modal-close></div>
   <div class="modal__dialog" role="document">
     <button class="modal__close" aria-label="Close" data-modal-close>×</button>
-    <h2>Modal title</h2>
-    <p>Modal content…</p>
-    <button data-modal-close>Close</button>
+    <p>Modal content</p>
   </div>
 </section>
 ```
 
-Programmatic
+Programmatic usage:
 
 ```js
-const modal = Modal.getOrCreate(document.querySelector("#mi-modal"));
-modal.open(); // or modal.close(), modal.toggle()
+const modal = Modal.getOrCreate(document.querySelector("#my-modal"));
+modal?.open();
 ```
 
-## Notes
+Delegated listeners are attached at the document level, so modal triggers continue working after pseudo-SPA page swaps.
 
-- Listeners are delegated on `document`, so modals loaded via PseudoSPA work without rehydration.
-- Base modal styles live in `src/styles/modal.css` and are included in `dist/arch-core.css`.
+## Development Workflow
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Build package outputs:
+
+```bash
+npm run build
+```
+
+Watch mode:
+
+```bash
+npm run dev
+```
+
+Smoke checks:
+
+```bash
+npm run test:smoke
+```

@@ -1,4 +1,5 @@
-// this is just an example config file! Use this file in your project as script
+// Example consumer config for DemiurgeJS (global/script usage).
+// Load this before calling Demiurge.bootstrapDemiurge() or before the auto-bootstrap build runs.
 window.PageConfig = {
   layout: {
     header: {
@@ -9,11 +10,11 @@ window.PageConfig = {
       selector: "#app-footer",
       url: "/partials/footer.html",
     },
-    // opcional: selector del menú para marcar activo
+    // Optional selector for active nav marking
     navSelector: "#menu a[href]",
   },
 
-  //scripts compartidos para varias páginas
+  // Shared scripts loaded on every view
   sharedScripts: ["/scripts/shared/stars.js", "/scripts/shared/snap-scroll.js"],
 
   pages: {
@@ -21,6 +22,7 @@ window.PageConfig = {
     systems: {
       scripts: ["/scripts/pages/systems.js"],
       init: "SystemsPage.init",
+      teardown: "SystemsPage.teardown",
     },
     portfolio: { scripts: [], init: null },
     aboutme: { scripts: [], init: null },

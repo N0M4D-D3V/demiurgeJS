@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS npm/Vite Example | Schedules</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header id="app-header"></header>
+
+      <main data-page="schedules">
+        <section class="hero-card compact">
+          <p class="eyebrow">Schedules</p>
+          <h1>Team Schedules</h1>
+          <p class="lede">
+            Navigate between pages without a full reload. The page script for this
+            view is loaded dynamically and cleaned up when you leave.
+          </p>
+          <div class="row">
+            <button id="add-schedule-row" class="btn">Add row (page script)</button>
+            <a class="btn btn-alt" href="/schedule-detail.html">Open detail page</a>
+          </div>
+          <p class="status-line">
+            Schedules page state:
+            <strong id="schedules-script-state">waiting for SchedulesPage.init()</strong>
+          </p>
+        </section>
+
+        <section class="panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Schedule</th>
+                <th>Owner</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="schedules-list">
+              <tr>
+                <td><a href="/schedule-detail.html">Morning Ops</a></td>
+                <td>Rhea</td>
+                <td><span class="pill">Active</span></td>
+              </tr>
+              <tr>
+                <td>Night Audit</td>
+                <td>Noah</td>
+                <td><span class="pill muted">Draft</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+
+      <footer id="app-footer"></footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

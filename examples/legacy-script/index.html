@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS Legacy Script Example</title>
+    <link rel="stylesheet" href="../../dist/demiurge.css" />
+  </head>
+  <body>
+    <header id="app-header"></header>
+
+    <main data-page="index">
+      <h1>Legacy Script Flow</h1>
+      <p>
+        This mirrors the old usage style: define <code>window.PageConfig</code>
+        and include one script that auto-boots on DOMContentLoaded.
+      </p>
+    </main>
+
+    <footer id="app-footer"></footer>
+
+    <script src="./page-config.js"></script>
+    <script src="../../dist/auto-bootstrap.global.js"></script>
+    <script>
+      // Legacy globals remain available for backward compatibility.
+      console.log(Boolean(window.Layout), Boolean(window.PseudoSPA), Boolean(window.PageScriptLoader), Boolean(window.Modal));
+    </script>
+  </body>
+  </html>

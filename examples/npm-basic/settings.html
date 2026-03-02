@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DemiurgeJS npm/Vite Example | Settings</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header id="app-header"></header>
+
+      <main data-page="settings">
+        <section class="hero-card compact">
+          <p class="eyebrow">Settings</p>
+          <h1>Workspace Settings</h1>
+          <p class="lede">
+            This page script binds form controls, updates a preview, and removes
+            listeners during cleanup.
+          </p>
+          <div class="row">
+            <a class="btn" href="/settings-detail.html">Open detail settings</a>
+            <a class="btn btn-alt" href="/">Back home</a>
+          </div>
+        </section>
+
+        <section class="grid-two">
+          <article class="panel">
+            <h2>Feature Flags</h2>
+            <label class="check">
+              <input id="flag-animations" type="checkbox" checked />
+              Enable route animations
+            </label>
+            <label class="check">
+              <input id="flag-runtime-log" type="checkbox" checked />
+              Keep runtime log visible
+            </label>
+            <label class="check">
+              <input id="flag-modals" type="checkbox" checked />
+              Enable modal delegation
+            </label>
+          </article>
+
+          <article class="panel">
+            <h2>Live Preview</h2>
+            <p id="settings-preview">waiting for SettingsPage.init()</p>
+            <button id="settings-preview-btn" class="btn btn-ghost">
+              Recompute Preview
+            </button>
+          </article>
+        </section>
+      </main>
+
+      <footer id="app-footer"></footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
