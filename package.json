@@ -1,6 +1,6 @@
 {
   "name": "@n0m4d-d3v/demiurgejs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "SK3L3TØR",
   "description": "Lightweight pseudo-SPA architecture for static sites.",
   "license": "MIT",
@@ -16,6 +16,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "demiurgejs": "./bin/demiurgejs.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -31,6 +34,10 @@
   "jsdelivr": "./dist/demiurge.global.min.js",
   "files": [
     "dist",
+    "bin",
+    "cli",
+    "skills",
+    "tools/demiurge-pseudo-spa.cli.js",
     "README.md",
     "LICENSE"
   ],

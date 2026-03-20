@@ -169,6 +169,28 @@ DemiurgeJS provides an official architecture skill for AI agents:
 
 Use it to scaffold, extend and audit DemiurgeJS projects safely.
 
+### CLI
+
+The package also ships a CLI binary: `demiurgejs`.
+
+Install/update the architecture skill in a target project:
+
+```bash
+demiurgejs skill sync
+demiurgejs skill sync --project /path/to/project
+```
+
+This command writes:
+
+- `.agents/skills/demiurgejs-architect/SKILL.md`
+- `skills-lock.json` (merged and updated idempotently)
+
+Generate the legacy pseudo-SPA scaffold:
+
+```bash
+demiurgejs init my-project
+```
+
 ## Development
 
 ### Build

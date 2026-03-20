@@ -188,3 +188,35 @@ Smoke checks:
 ```bash
 npm run test:smoke
 ```
+
+## CLI (`demiurgejs`)
+
+The package includes a local/global CLI binary: `demiurgejs`.
+
+Main commands:
+
+```bash
+demiurgejs skill sync
+demiurgejs skill sync --project /path/to/project
+demiurgejs init my-project
+```
+
+`skill sync` installs or updates the packaged architecture skill in the target project:
+
+- `.agents/skills/demiurgejs-architect/SKILL.md`
+- `skills-lock.json` (merge-safe update with deterministic hash)
+
+### Local CLI with `npm link`
+
+From this repository root:
+
+```bash
+npm link
+demiurgejs --help
+```
+
+To remove the global link:
+
+```bash
+npm unlink -g @n0m4d-d3v/demiurgejs
+```

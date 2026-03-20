@@ -4,6 +4,7 @@
 - Node.js >= 22 (tooling/build/release scripts)
 - Browser DOM runtime (document/window/fetch/history/URL APIs)
 - Plain JavaScript (ES modules) + CSS (no framework runtime)
+- Node CLI runtime for `demiurgejs` command (`bin/` + `cli/` modules using `fs`, `path`, `crypto`, `child_process`)
 
 ## Tooling
 - `esbuild` for JavaScript bundles (`tools/build-js.mjs`)
@@ -25,3 +26,4 @@
 - Preserve public package exports and browser global compatibility symbols.
 - Preserve `window.PageConfig` contract and page lifecycle cleanup order.
 - Keep `dist/` as generated output only; never hand-edit built artifacts.
+- Keep CLI behavior idempotent for skill sync operations and deterministic for lockfile hash generation.

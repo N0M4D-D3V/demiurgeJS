@@ -13,6 +13,7 @@ Static multi-page sites often need internal navigation, reusable layout partials
 - Provide pseudo-SPA internal navigation by intercepting links and replacing `<main>` content.
 - Support layout partial injection (header/footer) and active navigation highlighting.
 - Orchestrate per-page script loading, `init`, cleanup, and `teardown` via `window.PageConfig`.
+- Provide a packaged CLI (`demiurgejs`) for architecture utilities, including skill sync installation/updates and legacy scaffold bootstrapping.
 - Keep runtime dependency count at zero (plain JavaScript + CSS).
 - Support both npm consumers (ESM/CJS) and script-tag/browser-global consumers.
 - Preserve backward compatibility for legacy globals and existing PageConfig integrations.

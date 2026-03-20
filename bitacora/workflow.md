@@ -9,6 +9,7 @@
 - Keep library modules free of top-level DOM side effects.
 - Isolate browser side effects to dedicated browser entry files.
 - When exports/entries/output names change, update docs/examples/AGENTS in the same change.
+- When CLI commands, `bin`, or published file lists change, validate publish payload via `npm run check:pack`.
 - Do not hand-edit `dist/`; regenerate with build scripts.
 
 ## Quality Gates

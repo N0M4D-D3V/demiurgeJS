@@ -10,3 +10,5 @@ coverage/
 # agents
 skills-lock.json
 .agents/
+
+bin/*
