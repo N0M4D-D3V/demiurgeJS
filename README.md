@@ -197,12 +197,25 @@ npm run dev
 npm run test:smoke
 ```
 
+### Unit tests
+
+```bash
+npm run test:unit
+```
+
+### Coverage checks (>= 80% global)
+
+```bash
+npm run test:unit:coverage
+```
+
 ### Publish workflow
 
 ```bash
 npm run build
+npm run test:unit
 npm run test:smoke
-npm pack --dry-run
+npm run check:pack
 ```
 
 `prepublishOnly` runs these checks automatically before `npm publish`.

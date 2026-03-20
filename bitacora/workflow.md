@@ -13,6 +13,8 @@
 
 ## Quality Gates
 - `npm run build` must succeed and generate expected `dist/` artifacts.
+- `npm run test:unit` must pass for unit-level contract coverage.
+- `npm run test:unit:coverage` must pass with global thresholds >= 80% for lines, functions, branches, and statements.
 - `npm run test:smoke` must validate ESM/CJS and output integrity.
 - `npm run check:pack` must confirm publish payload.
 - `prepublishOnly` is expected to run all gates before `npm publish`.
@@ -21,10 +23,12 @@
 1. Update code and docs.
 2. Bump version in `package.json`.
 3. Run `npm run build`.
-4. Run `npm run test:smoke`.
-5. Run `npm run check:pack`.
-6. Verify `dist/` and `package.json` exports alignment.
-7. Publish package.
+4. Run `npm run test:unit`.
+5. Run `npm run test:unit:coverage`.
+6. Run `npm run test:smoke`.
+7. Run `npm run check:pack`.
+8. Verify `dist/` and `package.json` exports alignment.
+9. Publish package.
 
 ## Non-negotiable Session Rules
 - Always read `bitacora/index.md` at the beginning of every session.

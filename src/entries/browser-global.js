@@ -1,19 +1,31 @@
 import * as DemiurgeExports from "./index.js";
 
-const globalObj = typeof window !== "undefined" ? window : globalThis;
+export function getGlobalObject() {
+  return typeof window !== "undefined" ? window : globalThis;
+}
 
-if (globalObj) {
-  globalObj.Demiurge = Object.assign({}, globalObj.Demiurge, DemiurgeExports);
+export function attachDemiurgeToGlobal(
+  globalObj = getGlobalObject(),
+  exportsObject = DemiurgeExports,
+  doc = typeof document !== "undefined" ? document : undefined,
+) {
+  if (!globalObj) return null;
+
+  globalObj.Demiurge = Object.assign({}, globalObj.Demiurge, exportsObject);
 
   // Compatibilidad con consumidores antiguos.
-  globalObj.Layout = DemiurgeExports.Layout;
-  globalObj.PseudoSPA = DemiurgeExports.PseudoSPA;
-  globalObj.PageScriptLoader = DemiurgeExports.PageScriptLoader;
-  globalObj.Modal = DemiurgeExports.Modal;
+  globalObj.Layout = exportsObject.Layout;
+  globalObj.PseudoSPA = exportsObject.PseudoSPA;
+  globalObj.PageScriptLoader = exportsObject.PageScriptLoader;
+  globalObj.Modal = exportsObject.Modal;
 
-  if (typeof document !== "undefined") {
-    DemiurgeExports.initModalDelegation(document);
+  if (doc) {
+    exportsObject.initModalDelegation(doc);
   }
+
+  return globalObj.Demiurge;
 }
+
+attachDemiurgeToGlobal();
 
 export default DemiurgeExports;

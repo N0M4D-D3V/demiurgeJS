@@ -1,9 +1,9 @@
 ---
 track_id: TRACK-005
-status: pending
+status: completed
 priority: high
 created_at: 2026-03-02T09:12:37Z
-updated_at: 2026-03-02T09:12:37Z
+updated_at: 2026-03-17T16:06:12Z
 ---
 
 # Overview
@@ -22,20 +22,20 @@ updated_at: 2026-03-02T09:12:37Z
 
 # Tasks
 
-- [ ] RED: Add failing tests for bootstrap orchestration order using injected doubles.
-- [ ] GREEN: Add tests that verify layout partial injection calls for header/footer configs.
-- [ ] GREEN: Add tests that verify active-nav marking after layout injection and after navigation.
-- [ ] GREEN: Add tests that verify current page script loading based on `<main data-page="...">`.
-- [ ] GREEN: Add tests verifying router creation with `contentSelector: "main"` and callback composition.
-- [ ] GREEN: Add tests for `enableModalDelegation` toggle and `logBanner` toggle behavior.
-- [ ] GREEN: Add tests ensuring returned router object has `init()` invoked.
-- [ ] GREEN: Add tests for `autoBootstrapDemiurge` catching bootstrap errors and logging.
-- [ ] RED: Add failing tests for browser-global attachment behavior.
-- [ ] GREEN: Apply small internal refactor in entries to expose pure helper functions for tests.
-- [ ] GREEN: Add tests that verify `window.Demiurge` merge behavior and legacy aliases assignment.
-- [ ] GREEN: Add tests that verify modal delegation auto-init when `document` exists.
-- [ ] GREEN: Add tests for browser-auto-bootstrap behavior across `document.readyState` conditions.
-- [ ] REFACTOR: Confirm no changes required in `package.json` exports surface.
+- [x] RED: Add failing tests for bootstrap orchestration order using injected doubles.
+- [x] GREEN: Add tests that verify layout partial injection calls for header/footer configs.
+- [x] GREEN: Add tests that verify active-nav marking after layout injection and after navigation.
+- [x] GREEN: Add tests that verify current page script loading based on `<main data-page="...">`.
+- [x] GREEN: Add tests verifying router creation with `contentSelector: "main"` and callback composition.
+- [x] GREEN: Add tests for `enableModalDelegation` toggle and `logBanner` toggle behavior.
+- [x] GREEN: Add tests ensuring returned router object has `init()` invoked.
+- [x] GREEN: Add tests for `autoBootstrapDemiurge` catching bootstrap errors and logging.
+- [x] RED: Add failing tests for browser-global attachment behavior.
+- [x] GREEN: Apply small internal refactor in entries to expose pure helper functions for tests.
+- [x] GREEN: Add tests that verify `window.Demiurge` merge behavior and legacy aliases assignment.
+- [x] GREEN: Add tests that verify modal delegation auto-init when `document` exists.
+- [x] GREEN: Add tests for browser-auto-bootstrap behavior across `document.readyState` conditions.
+- [x] REFACTOR: Confirm no changes required in `package.json` exports surface.
 
 # Acceptance Criteria
 
@@ -59,3 +59,8 @@ updated_at: 2026-03-02T09:12:37Z
 
 - 2026-03-02T09:12:37Z | Track created from roadmap implementation.
 - 2026-03-02T09:12:37Z | Waiting on TRACK-002, TRACK-003, and TRACK-004.
+- 2026-03-17T15:48:17Z | TRACK-004 completed; dependencies cleared and track promoted to active.
+- 2026-03-17T15:50:24Z | Review session: active track checklist revalidated; no implementation changes applied.
+- 2026-03-17T16:06:12Z | Added bootstrap and entries test suites (`tests/unit/bootstrap/*`, `tests/unit/entries/*`) covering orchestration, toggles, error handling, global attachment merge, legacy aliases, and readyState auto-bootstrap behavior.
+- 2026-03-17T16:06:12Z | Applied minimal internal testability refactor: `bootstrapDemiurge` now accepts `modalDelegationInit` override; entries expose `attachDemiurgeToGlobal`, `runAutoBootstrap`, and `initAutoBootstrap` while preserving side-effect entry behavior.
+- 2026-03-17T16:06:12Z | Validation: `npm run test:unit` pass (47/47), `npm run test:unit:coverage` pass; `bootstrap/*` and `entries/*` at 100% lines and `package.json` exports unchanged.

@@ -12,13 +12,14 @@ export async function bootstrapDemiurge(options = {}) {
     layout = Layout,
     scriptLoader = PageScriptLoader,
     PseudoSPAClass = PseudoSPA,
+    modalDelegationInit = initModalDelegation,
     enableModalDelegation = true,
     logBanner = true,
     routerOptions = {},
   } = options;
 
   if (enableModalDelegation) {
-    initModalDelegation(document);
+    modalDelegationInit(document);
   }
 
   const layoutCfg = config.layout || {};
