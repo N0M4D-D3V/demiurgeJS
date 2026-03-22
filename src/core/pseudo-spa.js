@@ -2,6 +2,7 @@
 export function defaultShouldHandleLink(link, event) {
   const href = link.getAttribute("href");
   if (!href) return false;
+  if (link.hasAttribute("download")) return false;
 
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
     return false;

@@ -15,13 +15,14 @@ afterEach(() => {
   teardownDomEnv();
 });
 
-test('defaultShouldHandleLink rejects hash/mailto/tel/modifiers/target/external/same-url', (t) => {
+test('defaultShouldHandleLink rejects download/hash/mailto/tel/modifiers/target/external/same-url', (t) => {
   setupDomEnv(t, {
     html: '<!doctype html><html><body></body></html>',
     url: 'https://demiurgejs.test/docs#section',
   });
 
   const rejectCases = [
+    { href: '/assets/report.xlsx', download: '' },
     { href: '#anchor' },
     { href: 'mailto:hello@demiurgejs.test' },
     { href: 'tel:+34000000000' },
@@ -37,12 +38,41 @@ test('defaultShouldHandleLink rejects hash/mailto/tel/modifiers/target/external/
   for (const scenario of rejectCases) {
     const link = document.createElement('a');
     link.setAttribute('href', scenario.href);
+    if ('download' in scenario) {
+      link.setAttribute('download', scenario.download);
+    }
     if (scenario.target) {
       link.setAttribute('target', scenario.target);
     }
     const event = scenario.event ?? makeClickEvent();
     assert.equal(defaultShouldHandleLink(link, event), false);
   }
+});
+
+test('document click delegation does not intercept download links', (t) => {
+  setupDomEnv(t, {
+    html: `
+      <!doctype html>
+      <html>
+        <body>
+          <main data-page="home"></main>
+          <a id="download" href="/assets/report.xlsx" download><span id="inner">Download</span></a>
+        </body>
+      </html>
+    `,
+    url: 'https://demiurgejs.test/home',
+  });
+
+  const spa = new PseudoSPA();
+  const navigateSpy = spyOn(spa, 'navigate', t, () => {});
+  spa.init();
+
+  const clickEvent = makeClickEvent();
+  document.getElementById('inner').dispatchEvent(clickEvent);
+
+  assert.equal(defaultShouldHandleLink(document.getElementById('download'), clickEvent), false);
+  assert.equal(navigateSpy.calls.length, 0);
+  assert.equal(clickEvent.defaultPrevented, false);
 });
 
 test('defaultShouldHandleLink accepts valid internal navigation', (t) => {
